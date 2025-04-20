@@ -1,0 +1,83 @@
+button{
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.add-button{
+
+}
+
+.task-list {
+  margin: 0;
+  padding: 0;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between; /* Align text and buttons on the same level */
+  align-items: center; /* Vertically center the text and buttons */
+  padding: 0.5rem 0;
+  font: 200 20px/1.5 Helvetica, Verdana, sans-serif;
+  border-bottom: 1px solid #ccc;
+
+  /* Transition properties */
+  -webkit-transition: font-size 0.3s ease, background-color 0.3s ease;
+  -moz-transition: font-size 0.3s ease, background-color 0.3s ease;
+  -o-transition: font-size 0.3s ease, background-color 0.3s ease;
+  -ms-transition: font-size 0.3s ease, background-color 0.3s ease;
+  transition: font-size 0.3s ease, background-color 0.3s ease;
+}
+
+.task-item:hover{
+  font-size: 30px;
+  background: #f6f6f6;
+}
+
+.task-item:last-child {
+  border: none;
+}
+
+.task-buttons {
+  display: flex;
+  gap: 0.3rem; /* Adds small spacing between buttons */
+}
+
+.task-buttons button {
+  background: none;
+  border: none;
+  font-size: 1rem; /* Small icon-like size */
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 0.3rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.task-buttons button:hover {
+  color: #000; /* Darker color on hover */
+  transform: scale(1.2); /* Slightly enlarge the button on hover */
+}
+
+.delete-button {
+  color: #ff4d4d;
+}
+
+.delete-button:hover {
+  color: #d11a2a;
+}
+
+.edit-button {
+  color: #4caf50;
+}
+
+.edit-button:hover {
+  color: #45a049;
+}
+
+.view-button {
+  color: #008cba;
+}
+
+.view-button:hover {
+  color: #007bb5;
+}
