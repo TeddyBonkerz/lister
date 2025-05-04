@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 function ToDoList() {
-    const [tasks, setTasks] = useState<string[]>(["Eat ass", "Eat Food"])
+    const [tasks, setTasks] = useState<string[]>(["Eat grass", "Eat Food"])
     const [newTask, setNewTasks] = useState<string>('')
 
     function handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
