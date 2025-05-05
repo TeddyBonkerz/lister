@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
+import ModalContent from './Modal/AddTaskModal.tsx';
 
 function ToDoList() {
     const [tasks, setTasks] = useState<string[]>(["Eat grass", "Eat Food"])
     const [newTask, setNewTasks] = useState<string>('')
+    const [showModal, setShowModal] = useState(false);
+
 
     function handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
         setNewTasks(event.target.value)
     }
 
     function addTask(): void {
-
+        setShowModal(true)
     }
 
     function deleteTask(index: number): void {
@@ -22,9 +26,13 @@ function ToDoList() {
         <div className='to-do-list'>
             <h1>To Do List</h1>
             <div>
-                <input type='text' placeholder='Add tasks...' value={newTask} onChange={handleInputChange} />\
+                <input type='text' placeholder='Search tasks...' value={newTask} onChange={handleInputChange} />\
 
                 <button className='add-button' onClick={addTask}>Add</button>
+                {showModal && createPortal(
+                    <ModalContent onClose={() => setShowModal(false)} />,
+                    document.body
+                )}
 
                 <ol className='task-list'>
                     {tasks.map((task, index) => (
