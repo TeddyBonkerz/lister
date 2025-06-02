@@ -1,4 +1,5 @@
-import './ViewWorkItemModal.css';  // We'll reuse the modal styles
+import { useState } from 'react';
+import './ViewWorkItemModal.css';
 
 interface ViewWorkItemModalProps {
     onClose: () => void;
@@ -15,87 +16,99 @@ interface ViewWorkItemModalProps {
         notes: string[];
         tags: string[];
     };
-    //onEdit: (id: string, updates: Partial<ViewWorkItemModalProps['workitem']>) => void;
+    onEdit: (id: string, updates: Partial<ViewWorkItemModalProps['workitem']>) => void;
 }
 
 export default function ViewWorkItemModal({ 
     onClose, 
     workitem,
-    //onEdit 
+    onEdit 
 }: ViewWorkItemModalProps) {
+    const [showSteps, setShowSteps] = useState(true);
+    const [showNotes, setShowNotes] = useState(true);
+
     return (
         <div className="overlay" onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
         }}>
             <div className="modal view-workitem-modal">
-                <h2>{workitem.title}</h2>
-                
-                <div className="workitem-header">
-                    <div className="meta-info">
+                <div className="modal-header">
+                    <h2>{workitem.title}</h2>
+                    <div className="meta-row">
                         <span className="company">{workitem.company}</span>
+                        <span className="separator">•</span>
                         <span className="role">{workitem.role}</span>
-                        <span className="date">
-                            {new Date(workitem.dateCompleted).toLocaleDateString()}
-                        </span>
+                        <span className="separator">•</span>
+                        <span className="date">{new Date(workitem.dateCompleted).toLocaleDateString()}</span>
                     </div>
                 </div>
 
-                <div className="accomplishment-details">
-                    <section className="detail-section">
-                        <h3>Description</h3>
-                        <p>{workitem.description}</p>
-                    </section>
+                <div className="modal-content">
+                    <div className="content-section">
+                        <p className="description">{workitem.description}</p>
+                        {workitem.impact && (
+                            <p className="impact">
+                                <strong>Impact:</strong> {workitem.impact}
+                            </p>
+                        )}
+                    </div>
 
-                    {workitem.impact && (
-                        <section className="detail-section">
-                            <h3>Impact</h3>
-                            <p>{workitem.impact}</p>
-                        </section>
-                    )}
+                    <div className="two-column">
+                        <div className="column">
+                            <div className="collapsible-section">
+                                <button 
+                                    className="section-toggle"
+                                    onClick={() => setShowSteps(!showSteps)}
+                                >
+                                    📋 Steps {showSteps ? '▼' : '▶'}
+                                </button>
+                                {showSteps && workitem.steps.length > 0 && (
+                                    <ol className="steps-list">
+                                        {workitem.steps.map((step, index) => (
+                                            <li key={index}>{step}</li>
+                                        ))}
+                                    </ol>
+                                )}
+                            </div>
+                        </div>
 
-                    {workitem.steps.length > 0 && (
-                        <section className="detail-section">
-                            <h3>Steps Taken</h3>
-                            <ol>
-                                {workitem.steps.map((step, index) => (
-                                    <li key={index}>{step}</li>
-                                ))}
-                            </ol>
-                        </section>
-                    )}
+                        <div className="column">
+                            <div className="collapsible-section">
+                                <button 
+                                    className="section-toggle"
+                                    onClick={() => setShowNotes(!showNotes)}
+                                >
+                                    📝 Notes {showNotes ? '▼' : '▶'}
+                                </button>
+                                {showNotes && workitem.notes.length > 0 && (
+                                    <ul className="notes-list">
+                                        {workitem.notes.map((note, index) => (
+                                            <li key={index}>{note}</li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        </div>
+                    </div>
 
-                    {workitem.technologies.length > 0 && (
-                        <section className="detail-section">
-                            <h3>Technologies Used</h3>
-                            <div className="tags-list">
+                    <div className="tags-section">
+                        {workitem.technologies.length > 0 && (
+                            <div className="tech-tags">
+                                <span className="tag-label">🔧</span>
                                 {workitem.technologies.map((tech, index) => (
                                     <span key={index} className="tech-tag">{tech}</span>
                                 ))}
                             </div>
-                        </section>
-                    )}
-
-                    {workitem.notes.length > 0 && (
-                        <section className="detail-section">
-                            <h3>Additional Notes</h3>
-                            <ul>
-                                {workitem.notes.map((note, index) => (
-                                    <li key={index}>{note}</li>
-                                ))}
-                            </ul>
-                        </section>
-                    )}
-
-                    {workitem.tags.length > 0 && (
-                        <section className="detail-section">
-                            <h3>Tags</h3>
-                            <div className="tags-list">
+                        )}
+                        {workitem.tags.length > 0 && (
+                            <div className="general-tags">
+                                <span className="tag-label">🏷</span>
                                 {workitem.tags.map((tag, index) => (
                                     <span key={index} className="tag">{tag}</span>
                                 ))}
                             </div>
-                        </section>
-                    )}
+                        )}
+                    </div>
                 </div>
 
                 <div className="modal-buttons">

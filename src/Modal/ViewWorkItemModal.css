@@ -1,3 +1,138 @@
+.view-workitem-modal {
+    max-width: 800px;
+    width: 90%;
+}
+
+.modal-header {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+}
+
+.meta-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.separator {
+    color: #ccc;
+}
+
+.modal-content {
+    padding: 0 1rem;
+}
+
+.content-section {
+    margin-bottom: 1.5rem;
+}
+
+.description {
+    margin: 0 0 1rem 0;
+    line-height: 1.5;
+    color: #2c3e50;
+}
+
+.impact {
+    margin: 0;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    color: #495057;
+}
+
+.two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.collapsible-section {
+    margin-bottom: 1rem;
+}
+
+.section-toggle {
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem;
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #495057;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-toggle:hover {
+    background: #f8f9fa;
+}
+
+.steps-list,
+.notes-list {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1.5rem;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.steps-list li,
+.notes-list li {
+    margin-bottom: 0.5rem;
+}
+
+.tags-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.tech-tags,
+.general-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.tag-label {
+    color: #666;
+    font-size: 1rem;
+}
+
+.tech-tag,
+.tag {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+}
+
+.tech-tag {
+    background: #339af0;
+    color: white;
+}
+
+.tag {
+    background: #e9ecef;
+    color: #495057;
+}
+
+@media (max-width: 640px) {
+    .two-column {
+        grid-template-columns: 1fr;
+    }
+}
+
 .view-workitem-modal .workitem-details {
     margin-bottom: 2rem;
 }
