@@ -1,0 +1,53 @@
+.view-task-modal .task-details {
+    margin-bottom: 2rem;
+}
+
+.detail-group {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.detail-group label {
+    display: block;
+    color: #666;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.detail-group .task-description {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 0;
+    color: #495057;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.completed {
+    background: #63e24a;
+    color: white;
+}
+
+.status-badge.pending {
+    background: #ffd43b;
+    color: #495057;
+}
+
+.view-button {
+    background: #4a90e2;
+    color: white;
+}
+
+.view-button:hover {
+    background: #357abd;
+}

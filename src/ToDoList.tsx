@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import ModalContent from './Modal/AddTaskModal.tsx';
+import ViewTaskModal from './Modal/ViewTaskModal.tsx';
 
 interface Task {
     id: string;
@@ -14,7 +15,8 @@ function ToDoList() {
         { id: '2', text: "Eat Food", completed: false }
     ]);
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [showModal, setShowModal] = useState(false);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [viewingTask, setViewingTask] = useState<Task | null>(null);
 
     function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
         setSearchQuery(event.target.value);
@@ -66,16 +68,24 @@ function ToDoList() {
                         className='search-input'
                     />
                 </div>
-                <button className='add-button' onClick={() => setShowModal(true)}>Add Task</button>
+                <button className='add-button' onClick={() => setShowAddModal(true)}>Add Task</button>
             </div>
 
-            {showModal && createPortal(
+            {showAddModal && createPortal(
                 <ModalContent 
-                    onClose={() => setShowModal(false)}
+                    onClose={() => setShowAddModal(false)}
                     onAdd={(text) => {
                         addTask(text);
-                        setShowModal(false);
+                        setShowAddModal(false);
                     }}
+                />,
+                document.body
+            )}
+
+            {viewingTask && createPortal(
+                <ViewTaskModal
+                    task={viewingTask}
+                    onClose={() => setViewingTask(null)}
                 />,
                 document.body
             )}
@@ -93,7 +103,12 @@ function ToDoList() {
                             <span className='task-text'>{task.text}</span>
                         </div>
                         <div className='task-buttons'>
-                            <button className='view-button'>👁</button>
+                            <button 
+                                className='view-button'
+                                onClick={() => setViewingTask(task)}
+                            >
+                                👁
+                            </button>
                             <button 
                                 className='edit-button'
                                 onClick={() => {
