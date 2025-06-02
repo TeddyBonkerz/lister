@@ -160,24 +160,6 @@
     white-space: pre-wrap;
 }
 
-.status-badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.status-badge.completed {
-    background: #63e24a;
-    color: white;
-}
-
-.status-badge.pending {
-    background: #ffd43b;
-    color: #495057;
-}
-
 .view-button {
     background: #4a90e2;
     color: white;
@@ -185,4 +167,13 @@
 
 .view-button:hover {
     background: #357abd;
+}
+
+.edit-button {
+    background: #ffd43b;
+    color: #495057;
+  }
+  
+.edit-button:hover {
+background: #fab005;
 }

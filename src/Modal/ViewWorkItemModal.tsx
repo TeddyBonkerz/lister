@@ -112,6 +112,14 @@ export default function ViewWorkItemModal({
                 </div>
 
                 <div className="modal-buttons">
+                    <button 
+                        className='edit-button'
+                        onClick={() => {
+                            const newText = prompt('Edit description:', workitem.description);
+                            if (newText) onEdit(workitem.id, { description: newText });
+                        }}>
+                            ✎
+                    </button>
                     <button onClick={onClose} className="cancel-button">
                         X
                     </button>

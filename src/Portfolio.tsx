@@ -53,12 +53,10 @@ function ToDoList() {
         setItems(items.filter(item => item.id !== id));
     }
 
-    function editItem(id: string, newText: string): void {
-        if (newText.trim()) {
-            setItems(items.map(item =>
-                item.id === id ? { ...item, description: newText.trim() } : item
-            ));
-        }
+    function editItem(id: string, updates: Partial<WorkItem>): void {
+        setItems(items.map(item =>
+            item.id === id ? { ...item, ...updates } : item
+        ));
     }
 
     const filteredItems = items.filter(item => {
@@ -119,6 +117,7 @@ function ToDoList() {
                 <ViewWorkItemModal
                     workitem={viewingItem}
                     onClose={() => setViewingItem(null)}
+                    onEdit={editItem}
                 />,
                 document.body
             )}
@@ -144,7 +143,7 @@ function ToDoList() {
                                 className='edit-button'
                                 onClick={() => {
                                     const newText = prompt('Edit description:', item.description);
-                                    if (newText) editItem(item.id, newText);
+                                    if (newText) editItem(item.id, { description: newText.trim() });
                                 }}
                             >
                                 ✎
