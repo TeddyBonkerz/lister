@@ -107,7 +107,7 @@ function ToDoList() {
                                 className='delete-button' 
                                 onClick={() => deleteTask(task.id)}
                             >
-                                ×
+                                X
                             </button>
                         </div>
                     </li>
