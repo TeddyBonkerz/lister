@@ -1,19 +1,6 @@
 import { useState, useEffect } from 'react';
+import { WorkItem } from '../types';
 import './WorkItemModal.css';
-
-interface WorkItem {
-    id: string;
-    title: string;
-    dateCompleted: string;
-    company: string;
-    role: string;
-    description: string;
-    impact: string;
-    technologies: string[];
-    steps: string[];
-    notes: string[];
-    tags: string[];
-}
 
 interface WorkItemModalProps {
     onClose: () => void;

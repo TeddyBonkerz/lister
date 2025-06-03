@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { SearchCriteria, SavedSearch } from '../types';
 import './AdvancedSearch.css';
-
-interface SearchCriteria {
-    field: string;
-    value: string;
-    operation: 'AND' | 'OR';
-}
-
-interface SavedSearch {
-    id: string;
-    name: string;
-    criteria: SearchCriteria[];
-}
 
 interface AdvancedSearchProps {
     onSearch: (criteria: SearchCriteria[]) => void;

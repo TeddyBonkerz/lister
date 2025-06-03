@@ -2,47 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import WorkItemModal from './Modal/WorkItemModal.tsx';
 import AdvancedSearch from './components/AdvancedSearch';
+import { WorkItem, SearchCriteria, SearchHighlight } from './types';
 import './Portfolio.css';
 import './animations.css';
-
-interface BaseWorkItem {
-    id: string;
-    title: string;
-    dateCompleted: string;
-    company: string;
-    role: string;
-    description: string;
-    impact: string;
-    technologies: string[];
-    steps: string[];
-    notes: string[];
-    tags: string[];
-}
-
-interface WorkItem {
-    id: string;
-    title: string;
-    dateCompleted: string;
-    company: string;
-    role: string;
-    description: string;
-    impact: string;
-    technologies: string[];
-    steps: string[];
-    notes: string[];
-    tags: string[];
-}
-
-interface SearchHighlight {
-    text: string;
-    indices: number[];
-}
-
-interface SearchCriteria {
-    field: string;
-    value: string;
-    operation: 'AND' | 'OR';
-}
 
 function Portfolio() {
     const [items, setItems] = useState<WorkItem[]>([
