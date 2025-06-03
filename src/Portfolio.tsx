@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import WorkItemModal from './Modal/WorkItemModal.tsx';
+import './Portfolio.css';
 
 interface WorkItem {
     id: string;
@@ -33,6 +34,7 @@ function Portfolio() {
         }
     ]);
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
         mode: 'add' | 'edit';
@@ -62,6 +64,23 @@ function Portfolio() {
 
     function deleteItem(id: string): void {
         setItems(items.filter(item => item.id !== id));
+        setExpandedItems(prev => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+        });
+    }
+
+    function toggleItemExpansion(id: string): void {
+        setExpandedItems(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
     }
 
     const filteredItems = items.filter(item => {
@@ -80,7 +99,7 @@ function Portfolio() {
     });
 
     return (
-        <div className='to-do-list'>
+        <div className='portfolio'>
             <h1>Work Items</h1>
             <div className='list-controls'>
                 <div className='search-bar'>
@@ -120,16 +139,39 @@ function Portfolio() {
             <ol className='task-list'>
                 {filteredItems.map((item) => (
                     <li key={item.id} className='task-item'>
-                        <div className='task-content'>
-                            <span className='task-text'>
-                                <strong>{item.title}</strong>
-                                <br />
-                                {item.company} - {item.role}
-                            </span>
+                        <div 
+                            className='task-content'
+                            onClick={() => toggleItemExpansion(item.id)}
+                        >
+                            <div className='task-header'>
+                                <span className='task-title'>{item.title}</span>
+                                <span className='task-meta'>
+                                    {item.company} • {item.role} • {new Date(item.dateCompleted).toLocaleDateString()}
+                                </span>
+                            </div>
+                            
+                            {expandedItems.has(item.id) && (
+                                <div className='task-preview'>
+                                    <p className='task-description'>{item.description}</p>
+                                    {item.impact && (
+                                        <p className='task-impact'>
+                                            <strong>Impact:</strong> {item.impact}
+                                        </p>
+                                    )}
+                                    <div className='task-tags'>
+                                        {item.technologies.map((tech, index) => (
+                                            <span key={index} className='tech-tag'>{tech}</span>
+                                        ))}
+                                        {item.tags.map((tag, index) => (
+                                            <span key={index} className='tag'>{tag}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div className='task-buttons'>
                             <button 
-                                className='view-button'
+                                className='edit-button'
                                 onClick={() => setModalState({
                                     isOpen: true,
                                     mode: 'edit',
@@ -142,7 +184,7 @@ function Portfolio() {
                                 className='delete-button' 
                                 onClick={() => deleteItem(item.id)}
                             >
-                                X
+                                ×
                             </button>
                         </div>
                     </li>
