@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import AddWorkItemModal from './Modal/AddWorkItemModal.tsx';
-import ViewWorkItemModal from './Modal/ViewWorkItemModal.tsx';
+import WorkItemModal from './Modal/WorkItemModal.tsx';
 
 interface WorkItem {
     id: string;
@@ -17,7 +16,7 @@ interface WorkItem {
     tags: string[];
 }
 
-function ToDoList() {
+function Portfolio() {
     const [items, setItems] = useState<WorkItem[]>([
         {
             id: '1',
@@ -34,8 +33,14 @@ function ToDoList() {
         }
     ]);
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [viewingItem, setViewingItem] = useState<WorkItem | null>(null);
+    const [modalState, setModalState] = useState<{
+        isOpen: boolean;
+        mode: 'add' | 'edit';
+        itemToEdit?: WorkItem;
+    }>({
+        isOpen: false,
+        mode: 'add'
+    });
 
     function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
         setSearchQuery(event.target.value);
@@ -49,14 +54,14 @@ function ToDoList() {
         setItems([...items, newItem]);
     }
 
-    function deleteItem(id: string): void {
-        setItems(items.filter(item => item.id !== id));
-    }
-
     function editItem(id: string, updates: Partial<WorkItem>): void {
         setItems(items.map(item =>
             item.id === id ? { ...item, ...updates } : item
         ));
+    }
+
+    function deleteItem(id: string): void {
+        setItems(items.filter(item => item.id !== id));
     }
 
     const filteredItems = items.filter(item => {
@@ -87,25 +92,27 @@ function ToDoList() {
                         className='search-input'
                     />
                 </div>
-                <button className='add-button' onClick={() => setShowAddModal(true)}>Add Item</button>
+                <button 
+                    className='add-button' 
+                    onClick={() => setModalState({ isOpen: true, mode: 'add' })}
+                >
+                    Add Item
+                </button>
             </div>
 
-            {showAddModal && createPortal(
-                <AddWorkItemModal 
-                    onClose={() => setShowAddModal(false)}
-                    onAdd={(itemData) => {
-                        addItem(itemData);
-                        setShowAddModal(false);
+            {modalState.isOpen && createPortal(
+                <WorkItemModal
+                    mode={modalState.mode}
+                    initialData={modalState.itemToEdit}
+                    onClose={() => setModalState({ isOpen: false, mode: 'add' })}
+                    onSave={(itemData) => {
+                        if (modalState.mode === 'add') {
+                            addItem(itemData);
+                        } else if (modalState.mode === 'edit' && modalState.itemToEdit) {
+                            editItem(modalState.itemToEdit.id, itemData);
+                        }
+                        setModalState({ isOpen: false, mode: 'add' });
                     }}
-                />,
-                document.body
-            )}
-
-            {viewingItem && createPortal(
-                <ViewWorkItemModal
-                    workitem={viewingItem}
-                    onClose={() => setViewingItem(null)}
-                    onEdit={editItem}
                 />,
                 document.body
             )}
@@ -123,16 +130,11 @@ function ToDoList() {
                         <div className='task-buttons'>
                             <button 
                                 className='view-button'
-                                onClick={() => setViewingItem(item)}
-                            >
-                                👁
-                            </button>
-                            <button 
-                                className='edit-button'
-                                onClick={() => {
-                                    const newText = prompt('Edit description:', item.description);
-                                    if (newText) editItem(item.id, { description: newText.trim() });
-                                }}
+                                onClick={() => setModalState({
+                                    isOpen: true,
+                                    mode: 'edit',
+                                    itemToEdit: item
+                                })}
                             >
                                 ✎
                             </button>
@@ -150,4 +152,4 @@ function ToDoList() {
     );
 }
 
-export default ToDoList;
+export default Portfolio;

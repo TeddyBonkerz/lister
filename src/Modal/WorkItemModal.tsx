@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import './AddWorkItemModal.css';
+import { useState, useEffect } from 'react';
+import './WorkItemModal.css';
 
 interface WorkItem {
     id: string;
@@ -15,12 +15,14 @@ interface WorkItem {
     tags: string[];
 }
 
-interface AddWorkItemModalProps {
+interface WorkItemModalProps {
     onClose: () => void;
-    onAdd: (item: Omit<WorkItem, 'id'>) => void;
+    onSave: (item: Omit<WorkItem, 'id'>) => void;
+    initialData?: WorkItem;
+    mode: 'add' | 'edit';
 }
 
-export default function AddWorkItemModal({ onClose, onAdd }: AddWorkItemModalProps) {
+export default function WorkItemModal({ onClose, onSave, initialData, mode }: WorkItemModalProps) {
     const [formData, setFormData] = useState<Omit<WorkItem, 'id'>>({
         title: '',
         dateCompleted: new Date().toISOString().split('T')[0],
@@ -36,6 +38,13 @@ export default function AddWorkItemModal({ onClose, onAdd }: AddWorkItemModalPro
     const [newTechnology, setNewTechnology] = useState('');
     const [newTag, setNewTag] = useState('');
     const [errors, setErrors] = useState<Partial<Record<keyof WorkItem, string>>>({});
+
+    useEffect(() => {
+        if (initialData && mode === 'edit') {
+            const { id, ...rest } = initialData;
+            setFormData(rest);
+        }
+    }, [initialData, mode]);
 
     const validate = () => {
         const newErrors: Partial<Record<keyof WorkItem, string>> = {};
@@ -60,7 +69,7 @@ export default function AddWorkItemModal({ onClose, onAdd }: AddWorkItemModalPro
             steps: formData.steps.filter(step => step.trim()),
             notes: formData.notes.filter(note => note.trim())
         };
-        onAdd(cleanedData);
+        onSave(cleanedData);
         onClose();
     };
 
@@ -120,8 +129,8 @@ export default function AddWorkItemModal({ onClose, onAdd }: AddWorkItemModalPro
         <div className="overlay" onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
         }}>
-            <div className="modal add-workitem-modal">
-                <h2>Add Work Item</h2>
+            <div className="modal workitem-modal">
+                <h2>{mode === 'add' ? 'Add Work Item' : 'Edit Work Item'}</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-grid">
                         <div className="form-group">
@@ -320,7 +329,7 @@ export default function AddWorkItemModal({ onClose, onAdd }: AddWorkItemModalPro
                             Cancel
                         </button>
                         <button type="submit" className="submit-button">
-                            Add Work Item
+                            {mode === 'add' ? 'Add Work Item' : 'Save Changes'}
                         </button>
                     </div>
                 </form>
