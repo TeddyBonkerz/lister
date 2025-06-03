@@ -1,7 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import WorkItemModal from './Modal/WorkItemModal.tsx';
+import AdvancedSearch from './components/AdvancedSearch';
 import './Portfolio.css';
+import './animations.css';
+
+interface BaseWorkItem {
+    id: string;
+    title: string;
+    dateCompleted: string;
+    company: string;
+    role: string;
+    description: string;
+    impact: string;
+    technologies: string[];
+    steps: string[];
+    notes: string[];
+    tags: string[];
+}
 
 interface WorkItem {
     id: string;
@@ -15,6 +31,17 @@ interface WorkItem {
     steps: string[];
     notes: string[];
     tags: string[];
+}
+
+interface SearchHighlight {
+    text: string;
+    indices: number[];
+}
+
+interface SearchCriteria {
+    field: string;
+    value: string;
+    operation: 'AND' | 'OR';
 }
 
 function Portfolio() {
@@ -33,7 +60,7 @@ function Portfolio() {
             tags: ['authentication', 'security', 'backend']
         }
     ]);
-    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [searchCriteria, setSearchCriteria] = useState<any[]>([]);
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
@@ -43,17 +70,40 @@ function Portfolio() {
         isOpen: false,
         mode: 'add'
     });
+    const [isLoading, setIsLoading] = useState(false);
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        const saved = localStorage.getItem('darkMode');
+        return saved ? JSON.parse(saved) : true;
+    });
 
-    function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
-        setSearchQuery(event.target.value);
-    }
+    useEffect(() => {
+        localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+        document.body.classList.toggle('dark-mode', isDarkMode);
+    }, [isDarkMode]);
+
+    const suggestions = useMemo(() => ({
+        technologies: Array.from(new Set(items.flatMap(item => item.technologies))),
+        companies: Array.from(new Set(items.map(item => item.company))),
+        roles: Array.from(new Set(items.map(item => item.role))),
+        tags: Array.from(new Set(items.flatMap(item => item.tags)))
+    }), [items]);
 
     function addItem(itemData: Omit<WorkItem, 'id'>): void {
-        const newItem: WorkItem = {
-            ...itemData,
-            id: Date.now().toString()
-        };
-        setItems([...items, newItem]);
+        const newItem = {
+            id: Date.now().toString(),
+            title: typeof itemData.title === 'string' ? itemData.title : '',
+            dateCompleted: typeof itemData.dateCompleted === 'string' ? itemData.dateCompleted : new Date().toISOString().split('T')[0],
+            company: typeof itemData.company === 'string' ? itemData.company : '',
+            role: typeof itemData.role === 'string' ? itemData.role : '',
+            description: typeof itemData.description === 'string' ? itemData.description : '',
+            impact: typeof itemData.impact === 'string' ? itemData.impact : '',
+            technologies: Array.isArray(itemData.technologies) ? itemData.technologies : [],
+            steps: Array.isArray(itemData.steps) ? itemData.steps : [],
+            notes: Array.isArray(itemData.notes) ? itemData.notes : [],
+            tags: Array.isArray(itemData.tags) ? itemData.tags : []
+        } as WorkItem;
+
+        setItems(prevItems => [newItem, ...prevItems]);
     }
 
     function editItem(id: string, updates: Partial<WorkItem>): void {
@@ -83,41 +133,128 @@ function Portfolio() {
         });
     }
 
-    const filteredItems = items.filter(item => {
-        const searchTerms = searchQuery.toLowerCase().split(' ');
-        const itemText = `
-            ${item.title}
-            ${item.company}
-            ${item.role}
-            ${item.description}
-            ${item.impact}
-            ${item.technologies.join(' ')}
-            ${item.tags.join(' ')}
-        `.toLowerCase();
+    function highlightText(text: string, searchTerm: string): SearchHighlight {
+        if (!searchTerm) return { text, indices: [] };
+        
+        const indices: number[] = [];
+        let currentIndex = text.toLowerCase().indexOf(searchTerm.toLowerCase());
+        
+        while (currentIndex !== -1) {
+            indices.push(currentIndex);
+            currentIndex = text.toLowerCase().indexOf(searchTerm.toLowerCase(), currentIndex + 1);
+        }
+        
+        return { text, indices };
+    }
 
-        return searchTerms.every(term => itemText.includes(term));
-    });
+    function renderHighlightedText(highlight: SearchHighlight): React.ReactNode {
+        if (highlight.indices.length === 0) return highlight.text;
+
+        const result: React.ReactNode[] = [];
+        let lastIndex = 0;
+
+        highlight.indices.forEach((startIndex, i) => {
+            const endIndex = startIndex + searchCriteria[0]?.value.length;
+            
+            result.push(
+                <React.Fragment key={`text-${i}`}>
+                    {highlight.text.slice(lastIndex, startIndex)}
+                </React.Fragment>
+            );
+            
+            result.push(
+                <span key={`highlight-${i}`} className="highlight">
+                    {highlight.text.slice(startIndex, endIndex)}
+                </span>
+            );
+            
+            lastIndex = endIndex;
+        });
+
+        result.push(
+            <React.Fragment key="text-end">
+                {highlight.text.slice(lastIndex)}
+            </React.Fragment>
+        );
+
+        return result;
+    }
+
+    const matchField = (item: WorkItem, field: keyof WorkItem, value: string): boolean => {
+        const fieldValue = item[field];
+        if (typeof fieldValue === 'string') {
+            return fieldValue.toLowerCase().includes(value);
+        }
+        if (Array.isArray(fieldValue)) {
+            return fieldValue.some(v => v.toLowerCase().includes(value));
+        }
+        return false;
+    };
+
+    const filteredItems = useMemo(() => {
+        if (!searchCriteria.length) return items;
+
+        return items.filter(item => {
+            return searchCriteria.every(criteria => {
+                const value = criteria.value.toLowerCase();
+                if (!value) return true;
+
+                if (criteria.field === 'all') {
+                    return (
+                        matchField(item, 'title', value) ||
+                        matchField(item, 'company', value) ||
+                        matchField(item, 'role', value) ||
+                        matchField(item, 'description', value) ||
+                        matchField(item, 'impact', value) ||
+                        matchField(item, 'technologies', value) ||
+                        matchField(item, 'tags', value)
+                    );
+                }
+
+                return matchField(item, criteria.field as keyof WorkItem, value);
+            });
+        });
+    }, [items, searchCriteria]);
+
+    const handleSearch = (criteria: any[]) => {
+        setIsLoading(true);
+        setSearchCriteria(criteria);
+        setTimeout(() => setIsLoading(false), 300); // Simulate search delay
+    };
+
+    const getItemIcon = (item: WorkItem) => {
+        if (item.tags.includes('backend')) return '🔧';
+        if (item.tags.includes('frontend')) return '🎨';
+        if (item.tags.includes('database')) return '💾';
+        if (item.tags.includes('security')) return '🔒';
+        if (item.tags.includes('api')) return '🔌';
+        return '📋';
+    };
 
     return (
-        <div className='portfolio'>
-            <h1>Work Items</h1>
-            <div className='list-controls'>
-                <div className='search-bar'>
-                    <input
-                        type='text'
-                        placeholder='Search work items...'
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                        className='search-input'
-                    />
-                </div>
+        <div className={`portfolio ${isDarkMode ? 'dark-mode' : ''}`}>
+            <div className="header-controls">
+                <h1>Work Items</h1>
                 <button 
-                    className='add-button' 
-                    onClick={() => setModalState({ isOpen: true, mode: 'add' })}
+                    className="theme-toggle"
+                    onClick={() => setIsDarkMode(!isDarkMode)}
                 >
-                    Add Item
+                    {isDarkMode ? '☀️' : '🌙'}
                 </button>
             </div>
+
+            <AdvancedSearch
+                onSearch={handleSearch}
+                suggestions={suggestions}
+                isLoading={isLoading}
+            />
+
+            <button 
+                className="add-button" 
+                onClick={() => setModalState({ isOpen: true, mode: 'add' })}
+            >
+                + Add Item
+            </button>
 
             {modalState.isOpen && createPortal(
                 <WorkItemModal
@@ -136,59 +273,85 @@ function Portfolio() {
                 document.body
             )}
 
-            <ol className='task-list'>
-                {filteredItems.map((item) => (
-                    <li key={item.id} className='task-item'>
+            <ol className="task-list">
+                {filteredItems.map((item, index) => (
+                    <li 
+                        key={item.id} 
+                        className={`task-item animate-in`}
+                        style={{ animationDelay: `${index * 0.1}s` }}
+                    >
                         <div 
-                            className='task-content'
+                            className="task-content"
                             onClick={() => toggleItemExpansion(item.id)}
                         >
-                            <div className='task-header'>
-                                <span className='task-title'>{item.title}</span>
-                                <span className='task-meta'>
-                                    {item.company} • {item.role} • {new Date(item.dateCompleted).toLocaleDateString()}
+                            <div className="task-header">
+                                <span className="task-icon">{getItemIcon(item)}</span>
+                                <span className="task-title">
+                                    {renderHighlightedText(highlightText(item.title, searchCriteria[0]?.value || ''))}
+                                </span>
+                                <span className="task-meta">
+                                    {renderHighlightedText(highlightText(item.company, searchCriteria[0]?.value || ''))} • 
+                                    {renderHighlightedText(highlightText(item.role, searchCriteria[0]?.value || ''))} • 
+                                    {new Date(item.dateCompleted).toLocaleDateString()}
                                 </span>
                             </div>
                             
                             {expandedItems.has(item.id) && (
-                                <div className='task-preview'>
-                                    <p className='task-description'>{item.description}</p>
+                                <div className="task-preview expand">
+                                    <p className="task-description">
+                                        {renderHighlightedText(highlightText(item.description, searchCriteria[0]?.value || ''))}
+                                    </p>
                                     {item.impact && (
-                                        <p className='task-impact'>
-                                            <strong>Impact:</strong> {item.impact}
+                                        <p className="task-impact">
+                                            <strong>Impact:</strong> {renderHighlightedText(highlightText(item.impact, searchCriteria[0]?.value || ''))}
                                         </p>
                                     )}
-                                    <div className='task-tags'>
+                                    <div className="task-tags">
                                         {item.technologies.map((tech, index) => (
-                                            <span key={index} className='tech-tag'>{tech}</span>
+                                            <span key={index} className="tech-tag">
+                                                {renderHighlightedText(highlightText(tech, searchCriteria[0]?.value || ''))}
+                                            </span>
                                         ))}
                                         {item.tags.map((tag, index) => (
-                                            <span key={index} className='tag'>{tag}</span>
+                                            <span key={index} className="tag">
+                                                {renderHighlightedText(highlightText(tag, searchCriteria[0]?.value || ''))}
+                                            </span>
                                         ))}
                                     </div>
                                 </div>
                             )}
                         </div>
-                        <div className='task-buttons'>
+                        <div className="task-buttons">
                             <button 
-                                className='edit-button'
-                                onClick={() => setModalState({
-                                    isOpen: true,
-                                    mode: 'edit',
-                                    itemToEdit: item
-                                })}
+                                className="edit-button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setModalState({
+                                        isOpen: true,
+                                        mode: 'edit',
+                                        itemToEdit: item
+                                    });
+                                }}
                             >
                                 ✎
                             </button>
                             <button 
-                                className='delete-button' 
-                                onClick={() => deleteItem(item.id)}
+                                className="delete-button" 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteItem(item.id);
+                                }}
                             >
                                 ×
                             </button>
                         </div>
                     </li>
                 ))}
+                {filteredItems.length === 0 && (
+                    <div className="no-results fade-in">
+                        No items found matching your search criteria
+                    </div>
+                )}
             </ol>
         </div>
     );
