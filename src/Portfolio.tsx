@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import ModalContent from './Modal/AddTaskModal.tsx';
+import AddWorkItemModal from './Modal/AddWorkItemModal.tsx';
 import ViewWorkItemModal from './Modal/ViewWorkItemModal.tsx';
 
 interface WorkItem {
@@ -91,22 +91,10 @@ function ToDoList() {
             </div>
 
             {showAddModal && createPortal(
-                <ModalContent 
+                <AddWorkItemModal 
                     onClose={() => setShowAddModal(false)}
-                    onAdd={(text) => {
-                        // Temporary simple addition until we update the modal
-                        addItem({
-                            title: text,
-                            dateCompleted: new Date().toISOString().split('T')[0],
-                            company: 'Current Company',
-                            role: 'Current Role',
-                            description: text,
-                            impact: '',
-                            technologies: [],
-                            steps: [],
-                            notes: [],
-                            tags: []
-                        });
+                    onAdd={(itemData) => {
+                        addItem(itemData);
                         setShowAddModal(false);
                     }}
                 />,
